@@ -1,5 +1,68 @@
+#[derive(Debug, PartialEq)]
+struct Pixel {
+    x: usize,
+    y: usize,
+}
+
+struct Field {
+    width: usize,
+    height: usize,
+    landscape: Vec<Pixel>,
+    figure: Vec<Pixel>,
+}
+
+impl Field {
+    fn new(width: usize, height: usize) -> Field {
+        Field {
+            width,
+            height,
+            landscape: vec![],
+            figure: vec![],
+        }
+    }
+}
+
 fn main() {
-    println!("privet oleh");
+    println!("privet nikita");
+}
+
+fn parse_into_field(input: &str) -> Field {
+    let lines: Vec<&str> = input.split('\n').collect();
+
+    if lines.len() < 2 {
+        panic!("Invalid input")
+    }
+
+    let dimensions: Vec<&str> = lines[0].split(' ').collect();
+    let width = dimensions[0].parse().unwrap();
+    let height = dimensions[1].parse().unwrap();
+
+    let mut field = Field::new(width, height);
+
+    if height + 1 != lines.len() {
+        panic!("Specified height don't match with the actual one")
+    }
+
+    for y in 0..height {
+        let line = lines[y + 1].trim();
+
+        if line.len() != width {
+            panic!("Specified width don't match with the actual one")
+        }
+
+        for x in 0..width {
+            let pixel = Pixel { x, y };
+            let character = line.as_bytes()[x];
+
+            match character {
+                b'p' => field.figure.push(pixel),
+                b'#' => field.landscape.push(pixel),
+                b'.' => {}
+                _ => panic!("Unexpected char in field"),
+            }
+        }
+    }
+    field
 }
 
 #[cfg(test)]
