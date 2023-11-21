@@ -20,6 +20,34 @@ impl Field {
             figure: vec![],
         }
     }
+
+    fn get(&self, x: usize, y: usize) -> char {
+        for pixel in self.figure.iter() {
+            if pixel.x == x && pixel.y == y {
+                return 'p';
+            }
+        }
+
+        for pixel in self.landscape.iter() {
+            if pixel.x == x && pixel.y == y {
+                return '#';
+            }
+        }
+
+        '.'
+    }
+
+    fn to_string(&self) -> String {
+        let mut result = String::new();
+
+        for y in 0..self.height {
+            for x in 0..self.width {
+                result += &self.get(x, y).to_string()
+            }
+            result += "\n"
+        }
+        result
+    }
 }
 
 fn main() {
