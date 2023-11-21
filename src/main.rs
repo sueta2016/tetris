@@ -161,4 +161,24 @@ mod tests {
         // Act
         let _ = parse_into_field(input);
     }
+
+    #[test]
+    fn should_correctly_cast_to_string() {
+        let input = r"3 5
+        ppp
+        .p.
+        ...
+        #.#
+        ###";
+        let field = parse_into_field(input);
+
+        let expected_string = r"ppp
+.p.
+...
+#.#
+###
+";
+
+        assert_eq!(field.to_string(), expected_string)
+    }
 }
