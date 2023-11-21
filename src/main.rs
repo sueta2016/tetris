@@ -1,6 +1,7 @@
 fn main() {
     println!("privet oleh");
     println!("privet nikita");
+    println!("privet oleh");
 }
 
 #[cfg(test)]
