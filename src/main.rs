@@ -48,6 +48,32 @@ impl Field {
         }
         result
     }
+
+    fn can_move(&self) -> bool {
+        let mut can_move = true;
+
+        for figure_pixel in self.figure.iter() {
+            let new_y = figure_pixel.y + 1;
+
+            if new_y == self.height {
+                can_move = false;
+                break;
+            }
+
+            for landscape_pixel in self.landscape.iter() {
+                if figure_pixel.x == landscape_pixel.x && new_y == landscape_pixel.y {
+                    can_move = false
+                }
+            }
+        }
+        can_move
+    }
+
+    fn move_figure(&mut self) {
+        for figure_pixel in self.figure.iter_mut() {
+            figure_pixel.y += 1
+        }
+    }
 }
 
 fn main() {
