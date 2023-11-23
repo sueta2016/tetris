@@ -209,4 +209,67 @@ mod tests {
 
         assert_eq!(field.to_string(), expected_string)
     }
+
+    #[test]
+    fn should_allow_to_move_figure_one_cell_down() {
+        let initial_state = r"3 5
+        ppp
+        .p.
+        ...
+        #.#
+        ###";
+
+        let field = parse_into_field(initial_state);
+
+        assert_eq!(field.can_move(), true)
+    }
+
+    #[test]
+    fn should_not_allow_move_through_landscape() {
+        let initial_state = r"3 5
+        ...
+        ...
+        ...
+        #p#
+        ###";
+        let field = parse_into_field(initial_state);
+
+        assert_eq!(field.can_move(), false)
+    }
+
+    #[test]
+    fn should_not_allow_move_through_floor() {
+        let initial_state = r"3 5
+        ...
+        ...
+        ...
+        ...
+        .pp";
+        let field = parse_into_field(initial_state);
+
+        assert_eq!(field.can_move(), false)
+    }
+
+    #[test]
+    fn should_move_figure_down() {
+        let initial_state = r"3 5
+        ppp
+        .p.
+        ...
+        #.#
+        ###";
+
+        let expected = r"...
+ppp
+.p.
+#.#
+###
+";
+
+        let mut field = parse_into_field(initial_state);
+
+        field.move_figure();
+
+        assert_eq!(field.to_string(), expected)
+    }
 }
