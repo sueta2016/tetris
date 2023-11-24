@@ -1,4 +1,4 @@
-use tetris::{file_system::FileSystemOperations, main_handler, output::Output};
+use tetris::{file_system::FileSystemOperations, main_handler};
 
 struct MockFileSystem {
     is_exist: bool,
@@ -47,26 +47,10 @@ impl Default for MockFileSystem {
     }
 }
 
-struct MockOutput {
-    expected_output: &'static str,
-}
-
-impl Output for MockOutput {
-    fn write(&self, string: &str) {
-        assert_eq!(self.expected_output, string);
-    }
-}
-
-impl Default for MockOutput {
-    fn default() -> Self {
-        MockOutput {
-            expected_output: "",
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
+    use tetris::output::MockOutput;
+
     use super::*;
 
     #[test]

@@ -31,7 +31,13 @@ pub fn main_handler(
         }
     };
 
-    let mut field = parse_into_field(input.as_str());
+    let mut field = match parse_into_field(input.as_str()) {
+        Ok(value) => value,
+        Err(err_text) => {
+            output.write(err_text);
+            return;
+        }
+    };
     // play game
 
     while field.can_move() {

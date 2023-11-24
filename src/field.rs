@@ -3,7 +3,7 @@ struct Pixel {
     x: usize,
     y: usize,
 }
-
+#[derive(Debug)]
 pub struct Field {
     width: usize,
     height: usize,
@@ -76,11 +76,11 @@ impl Field {
     }
 }
 
-pub fn parse_into_field(input: &str) -> Field {
+pub fn parse_into_field<'a>(input: &'a str) -> Result<Field, &'a str> {
     let lines: Vec<&str> = input.split('\n').collect();
 
     if lines.len() < 2 {
-        panic!("Invalid input")
+        return Err("Invalid input");
     }
 
     let dimensions: Vec<&str> = lines[0].split(' ').collect();
@@ -90,14 +90,14 @@ pub fn parse_into_field(input: &str) -> Field {
     let mut field = Field::new(width, height);
 
     if height + 1 != lines.len() {
-        panic!("Specified height don't match with the actual one")
+        return Err("Specified height don't match with the actual one");
     }
 
     for y in 0..height {
         let line = lines[y + 1].trim();
 
         if line.len() != width {
-            panic!("Specified width don't match with the actual one")
+            return Err("Specified width don't match with the actual one");
         }
 
         for x in 0..width {
@@ -108,11 +108,13 @@ pub fn parse_into_field(input: &str) -> Field {
                 b'p' => field.figure.push(pixel),
                 b'#' => field.landscape.push(pixel),
                 b'.' => {}
-                _ => panic!("Unexpected char in field"),
+                _ => {
+                    return Err("Unexpected char in field");
+                }
             }
         }
     }
-    field
+    Ok(field)
 }
 
 #[cfg(test)]
@@ -137,7 +139,7 @@ mod tests {
         let expected_figure: Vec<Pixel> = vec![Pixel { x: 1, y: 0 }, Pixel { x: 1, y: 1 }];
 
         // Act
-        let field = parse_into_field(input);
+        let field = parse_into_field(input).unwrap();
 
         // Assert
         assert_eq!(field.width, expected_width);
@@ -147,8 +149,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Unexpected char in field")]
-    fn should_panic_on_invalid_char_in_field() {
+    fn should_throw_error_on_invalid_char_in_field() {
         // Arrange
         let input = r"3 4
         .M.
@@ -157,12 +158,13 @@ mod tests {
         #I#";
 
         // Act
-        let _ = parse_into_field(input);
+        let error_text = parse_into_field(input).unwrap_err();
+
+        assert_eq!(error_text, "Unexpected char in field")
     }
 
     #[test]
-    #[should_panic(expected = "Specified width don't match with the actual one")]
-    fn should_panic_on_unmatching_width() {
+    fn should_throw_error_on_unmatching_width() {
         // Arrange
         let input = r"2 4
         .p.
@@ -171,26 +173,35 @@ mod tests {
         ###";
 
         // Act
-        let _ = parse_into_field(input);
+        let error_text = parse_into_field(input).unwrap_err();
+
+        assert_eq!(
+            error_text,
+            "Specified width don't match with the actual one"
+        )
     }
 
     #[test]
-    #[should_panic(expected = "Specified height don't match with the actual one")]
-    fn should_panic_on_unmatching_height() {
+    fn should_throw_error_on_unmatching_height() {
         // Arrange
         let input = r"3 5
         .p.
-        ....
+        ...
         ...
         ###";
 
         // Act
-        let _ = parse_into_field(input);
+        let error_text = parse_into_field(input).unwrap_err();
+
+        assert_eq!(
+            error_text,
+            "Specified height don't match with the actual one"
+        )
     }
 
     #[test]
     #[should_panic]
-    fn should_panic_on_invalid_field_dimensions() {
+    fn should_throw_error_on_invalid_field_dimensions() {
         // Arrange
         let input = r"mesi -
         .p.
@@ -199,17 +210,17 @@ mod tests {
         ###";
 
         // Act
-        let _ = parse_into_field(input);
+        let _ = parse_into_field(input).unwrap();
     }
 
     #[test]
-    #[should_panic(expected = "Invalid input")]
+    #[should_panic]
     fn should_panic_on_invalid_input() {
         // Arrange
         let input = r"Ronaldo better than Messi";
 
         // Act
-        let _ = parse_into_field(input);
+        let _ = parse_into_field(input).unwrap();
     }
 
     #[test]
@@ -220,7 +231,7 @@ mod tests {
         ...
         #.#
         ###";
-        let field = parse_into_field(input);
+        let field = parse_into_field(input).unwrap();
 
         let expected_string = r"ppp
 .p.
@@ -241,7 +252,7 @@ mod tests {
         #.#
         ###";
 
-        let field = parse_into_field(initial_state);
+        let field = parse_into_field(initial_state).unwrap();
 
         assert_eq!(field.can_move(), true)
     }
@@ -254,7 +265,7 @@ mod tests {
         ...
         #p#
         ###";
-        let field = parse_into_field(initial_state);
+        let field = parse_into_field(initial_state).unwrap();
 
         assert_eq!(field.can_move(), false)
     }
@@ -267,7 +278,7 @@ mod tests {
         ...
         ...
         .pp";
-        let field = parse_into_field(initial_state);
+        let field = parse_into_field(initial_state).unwrap();
 
         assert_eq!(field.can_move(), false)
     }
@@ -288,7 +299,7 @@ ppp
 ###
 ";
 
-        let mut field = parse_into_field(initial_state);
+        let mut field = parse_into_field(initial_state).unwrap();
 
         field.move_figure();
 

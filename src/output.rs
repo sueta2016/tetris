@@ -9,3 +9,21 @@ impl Output for ConsoleOutput {
         println!("{}", message);
     }
 }
+
+pub struct MockOutput {
+    pub expected_output: &'static str,
+}
+
+impl Output for MockOutput {
+    fn write(&self, string: &str) {
+        assert_eq!(self.expected_output, string);
+    }
+}
+
+impl Default for MockOutput {
+    fn default() -> Self {
+        MockOutput {
+            expected_output: "",
+        }
+    }
+}
