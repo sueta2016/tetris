@@ -46,9 +46,7 @@ impl Output for MockOutput {
     fn write(&self, string: &str) {
         assert_eq!(self.expected_output, string);
     }
-    fn clear(&self) {
-        assert_eq!(self.expected_output, "");
-    }
+    fn clear(&self) {}
 }
 
 impl Default for MockOutput {

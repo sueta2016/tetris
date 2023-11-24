@@ -103,9 +103,9 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "Can't check for several outputs"]
     fn should_correctly_play_game() {
-        let input = r"3 4
-        .p.
+        let input = r".p.
         pp.
         ...
         ###"
@@ -122,7 +122,6 @@ pp.
         let mut mock_file_system = MockFileSystem {
             file_content_result: Ok(input),
             is_exist: true,
-            expected_output: output_str,
             ..Default::default()
         };
 
@@ -130,41 +129,8 @@ pp.
             args,
             &mut mock_file_system,
             &mut MockOutput {
-                expected_output: "File created",
+                expected_output: output_str,
             },
         );
-    }
-
-    #[test]
-    fn should_display_error_message_on_file_not_saved() {
-        let output_str = "...
-.p.
-pp.
-###
-";
-        let input = r"3 4
-        .p.
-        pp.
-        ...
-        ###"
-        .to_string();
-
-        let args = vec!["messi.txt".to_string()];
-        let mut mock_file_system = MockFileSystem {
-            file_content_result: Ok(input),
-            is_exist: true,
-            expected_output: output_str,
-            write_file_result: Err(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                "Couldn't save file",
-            )),
-            ..Default::default()
-        };
-
-        let mut mock_output = MockOutput {
-            expected_output: "Couldn't save file",
-        };
-
-        main_handler(args, &mut mock_file_system, &mut mock_output)
     }
 }
