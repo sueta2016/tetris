@@ -115,8 +115,7 @@ mod tests {
     #[test]
     fn should_parse_input_into_field() {
         // Arrange
-        let input = r"3 4
-        .p.
+        let input = r".p.
         .p.
         ...
         ###";
@@ -157,9 +156,8 @@ mod tests {
     #[test]
     fn should_throw_error_on_unmatching_width() {
         // Arrange
-        let input = r"2 4
-        .p.
-        ...
+        let input = r".p.
+        ....
         ...
         ###";
 
@@ -169,24 +167,6 @@ mod tests {
         assert_eq!(
             error_text,
             "Specified width don't match with the actual one"
-        )
-    }
-
-    #[test]
-    fn should_throw_error_on_unmatching_height() {
-        // Arrange
-        let input = r"3 5
-        .p.
-        ...
-        ...
-        ###";
-
-        // Act
-        let error_text = parse_into_field(input).unwrap_err();
-
-        assert_eq!(
-            error_text,
-            "Specified height don't match with the actual one"
         )
     }
 
@@ -216,8 +196,7 @@ mod tests {
 
     #[test]
     fn should_correctly_cast_to_string() {
-        let input = r"3 5
-        ppp
+        let input = r"ppp
         .p.
         ...
         #.#
@@ -236,8 +215,7 @@ mod tests {
 
     #[test]
     fn should_allow_to_move_figure_one_cell_down() {
-        let initial_state = r"3 5
-        ppp
+        let initial_state = r"ppp
         .p.
         ...
         #.#
@@ -250,8 +228,7 @@ mod tests {
 
     #[test]
     fn should_not_allow_move_through_landscape() {
-        let initial_state = r"3 5
-        ...
+        let initial_state = r"...
         ...
         ...
         #p#
@@ -263,8 +240,7 @@ mod tests {
 
     #[test]
     fn should_not_allow_move_through_floor() {
-        let initial_state = r"3 5
-        ...
+        let initial_state = r"...
         ...
         ...
         ...
@@ -276,8 +252,7 @@ mod tests {
 
     #[test]
     fn should_move_figure_down() {
-        let initial_state = r"3 5
-        ppp
+        let initial_state = r"ppp
         .p.
         ...
         #.#
