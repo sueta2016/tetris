@@ -28,8 +28,11 @@ impl FileSystemOperations for MockFileSystem {
 impl Default for MockFileSystem {
     fn default() -> Self {
         MockFileSystem {
-            is_exist: true,
-            file_content_result: Ok(String::from("default file content")),
+            is_exist: false,
+            file_content_result: Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "Couldn't read file",
+            )),
             expected_output: "",
         }
     }
@@ -39,16 +42,12 @@ impl Default for MockFileSystem {
 mod tests {
     use super::*;
 
-    fn create_default_mock() -> MockFileSystem {
-        MockFileSystem::default()
-    }
-
     #[test]
     #[should_panic(expected = "Usage: ./main <filename>")]
     fn should_panic_if_filepath_absent() {
         let args: Vec<String> = vec![];
 
-        main_handler(args, &mut create_default_mock());
+        main_handler(args, &mut MockFileSystem::default());
     }
 
     #[test]
@@ -57,9 +56,8 @@ mod tests {
         let args: Vec<String> = vec!["messi.txt".to_string()];
 
         let mut mock_file_system = MockFileSystem {
-            file_content_result: Ok("".to_string()),
             is_exist: false,
-            expected_output: "",
+            ..Default::default()
         };
 
         main_handler(args, &mut mock_file_system)
@@ -76,7 +74,7 @@ mod tests {
                 "Couldn't read file",
             )),
             is_exist: true,
-            expected_output: "",
+            ..Default::default()
         };
 
         main_handler(args, &mut mock_file_system)
