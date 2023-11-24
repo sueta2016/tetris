@@ -1,9 +1,10 @@
-use tetris::{file_system::FileSystemOperations, main_handler};
+use tetris::{file_system::FileSystemOperations, main_handler, output::Output};
 
 struct MockFileSystem {
     is_exist: bool,
     file_content_result: Result<String, std::io::Error>,
     expected_output: &'static str,
+    write_file_result: Result<(), std::io::Error>,
 }
 
 impl FileSystemOperations for MockFileSystem {
@@ -21,7 +22,14 @@ impl FileSystemOperations for MockFileSystem {
     }
     fn write_file(&mut self, _file_path: &str, content: &str) -> Result<(), std::io::Error> {
         assert_eq!(content, self.expected_output);
-        Ok(())
+
+        match self.write_file_result {
+            Err(_) => Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "Couldn't save file",
+            )),
+            Ok(_) => Ok(()),
+        }
     }
 }
 
@@ -34,6 +42,25 @@ impl Default for MockFileSystem {
                 "Couldn't read file",
             )),
             expected_output: "",
+            write_file_result: Ok(()),
+        }
+    }
+}
+
+struct MockOutput {
+    expected_output: &'static str,
+}
+
+impl Output for MockOutput {
+    fn write(&self, string: &str) {
+        assert_eq!(self.expected_output, string);
+    }
+}
+
+impl Default for MockOutput {
+    fn default() -> Self {
+        MockOutput {
+            expected_output: "",
         }
     }
 }
@@ -43,16 +70,20 @@ mod tests {
     use super::*;
 
     #[test]
-    #[should_panic(expected = "Usage: ./main <filename>")]
-    fn should_panic_if_filepath_absent() {
+    fn should_out_usage_info_if_filepath_absent() {
         let args: Vec<String> = vec![];
 
-        main_handler(args, &mut MockFileSystem::default());
+        main_handler(
+            args,
+            &mut MockFileSystem::default(),
+            &mut MockOutput {
+                expected_output: "Usage: ./main <filename>",
+            },
+        );
     }
 
     #[test]
-    #[should_panic(expected = "File not exists")]
-    fn should_panic_if_file_not_exists() {
+    fn should_output_error_if_file_not_exists() {
         let args: Vec<String> = vec!["messi.txt".to_string()];
 
         let mut mock_file_system = MockFileSystem {
@@ -60,12 +91,15 @@ mod tests {
             ..Default::default()
         };
 
-        main_handler(args, &mut mock_file_system)
+        let mut mock_output = MockOutput {
+            expected_output: "File not exists",
+        };
+
+        main_handler(args, &mut mock_file_system, &mut mock_output)
     }
 
     #[test]
-    #[should_panic(expected = "Couldn't read file")]
-    fn should_panic_if_could_not_read_file() {
+    fn should_output_error_if_could_not_read_file() {
         let args: Vec<String> = vec!["messi.txt".to_string()];
 
         let mut mock_file_system = MockFileSystem {
@@ -77,7 +111,11 @@ mod tests {
             ..Default::default()
         };
 
-        main_handler(args, &mut mock_file_system)
+        let mut mock_output = MockOutput {
+            expected_output: "Couldn't read file",
+        };
+
+        main_handler(args, &mut mock_file_system, &mut mock_output)
     }
 
     #[test]
@@ -101,8 +139,48 @@ pp.
             file_content_result: Ok(input),
             is_exist: true,
             expected_output: output_str,
+            ..Default::default()
         };
 
-        main_handler(args, &mut mock_file_system);
+        main_handler(
+            args,
+            &mut mock_file_system,
+            &mut MockOutput {
+                expected_output: "File created",
+            },
+        );
+    }
+
+    #[test]
+    fn should_display_error_message_on_file_not_saved() {
+        let output_str = "...
+.p.
+pp.
+###
+";
+        let input = r"3 4
+        .p.
+        pp.
+        ...
+        ###"
+        .to_string();
+
+        let args = vec!["messi.txt".to_string()];
+        let mut mock_file_system = MockFileSystem {
+            file_content_result: Ok(input),
+            is_exist: true,
+            expected_output: output_str,
+            write_file_result: Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "Couldn't save file",
+            )),
+            ..Default::default()
+        };
+
+        let mut mock_output = MockOutput {
+            expected_output: "Couldn't save file",
+        };
+
+        main_handler(args, &mut mock_file_system, &mut mock_output)
     }
 }
