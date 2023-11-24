@@ -79,22 +79,13 @@ impl Field {
 pub fn parse_into_field<'a>(input: &'a str) -> Result<Field, &'a str> {
     let lines: Vec<&str> = input.split('\n').collect();
 
-    if lines.len() < 2 {
-        return Err("Invalid input");
-    }
-
-    let dimensions: Vec<&str> = lines[0].split(' ').collect();
-    let width = dimensions[0].parse().unwrap();
-    let height = dimensions[1].parse().unwrap();
+    let width = lines[1].trim().len();
+    let height = lines.len();
 
     let mut field = Field::new(width, height);
 
-    if height + 1 != lines.len() {
-        return Err("Specified height don't match with the actual one");
-    }
-
     for y in 0..height {
-        let line = lines[y + 1].trim();
+        let line = lines[y].trim();
 
         if line.len() != width {
             return Err("Specified width don't match with the actual one");
