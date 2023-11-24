@@ -37,7 +37,7 @@ impl Field {
         '.'
     }
 
-    fn to_string(&self) -> String {
+    pub fn to_string(&self) -> String {
         let mut result = String::new();
 
         for y in 0..self.height {
@@ -49,7 +49,7 @@ impl Field {
         result
     }
 
-    fn can_move(&self) -> bool {
+    pub fn can_move(&self) -> bool {
         let mut can_move = true;
 
         for figure_pixel in self.figure.iter() {
@@ -69,7 +69,7 @@ impl Field {
         can_move
     }
 
-    fn move_figure(&mut self) {
+    pub fn move_figure(&mut self) {
         for figure_pixel in self.figure.iter_mut() {
             figure_pixel.y += 1
         }
