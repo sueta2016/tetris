@@ -8,6 +8,6 @@ fn main() {
     main_handler(
         args,
         &mut file_system::FileSystem,
-        &mut output::ConsoleOutput,
+        &mut output::ColorFulOutput,
     );
 }
