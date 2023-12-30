@@ -8,7 +8,7 @@ pub struct Field {
     width: usize,
     height: usize,
     landscape: Vec<Pixel>,
-    figure: Vec<Pixel>,
+    piece: Vec<Pixel>,
 }
 
 impl Field {
@@ -17,12 +17,12 @@ impl Field {
             width,
             height,
             landscape: vec![],
-            figure: vec![],
+            piece: vec![],
         }
     }
 
     fn get(&self, x: usize, y: usize) -> char {
-        for pixel in self.figure.iter() {
+        for pixel in self.piece.iter() {
             if pixel.x == x && pixel.y == y {
                 return 'p';
             }
@@ -52,8 +52,8 @@ impl Field {
     pub fn can_move(&self) -> bool {
         let mut can_move = true;
 
-        for figure_pixel in self.figure.iter() {
-            let new_y = figure_pixel.y + 1;
+        for piece_pixel in self.piece.iter() {
+            let new_y = piece_pixel.y + 1;
 
             if new_y == self.height {
                 can_move = false;
@@ -61,7 +61,7 @@ impl Field {
             }
 
             for landscape_pixel in self.landscape.iter() {
-                if figure_pixel.x == landscape_pixel.x && new_y == landscape_pixel.y {
+                if piece_pixel.x == landscape_pixel.x && new_y == landscape_pixel.y {
                     can_move = false
                 }
             }
@@ -69,9 +69,9 @@ impl Field {
         can_move
     }
 
-    pub fn move_figure(&mut self) {
-        for figure_pixel in self.figure.iter_mut() {
-            figure_pixel.y += 1
+    pub fn move_piece(&mut self) {
+        for piece_pixel in self.piece.iter_mut() {
+            piece_pixel.y += 1
         }
     }
 }
@@ -105,7 +105,7 @@ pub fn parse_into_field<'a>(input: &'a str) -> Result<Field, &'a str> {
             let character = line.as_bytes()[x];
 
             match character {
-                b'p' => field.figure.push(pixel),
+                b'p' => field.piece.push(pixel),
                 b'#' => field.landscape.push(pixel),
                 b'.' => {}
                 _ => {
@@ -136,7 +136,7 @@ mod tests {
             Pixel { x: 1, y: 3 },
             Pixel { x: 2, y: 3 },
         ];
-        let expected_figure: Vec<Pixel> = vec![Pixel { x: 1, y: 0 }, Pixel { x: 1, y: 1 }];
+        let expected_piece: Vec<Pixel> = vec![Pixel { x: 1, y: 0 }, Pixel { x: 1, y: 1 }];
 
         // Act
         let field = parse_into_field(input).unwrap();
@@ -145,7 +145,7 @@ mod tests {
         assert_eq!(field.width, expected_width);
         assert_eq!(field.height, expected_height);
         assert_eq!(field.landscape, expected_landscape);
-        assert_eq!(field.figure, expected_figure);
+        assert_eq!(field.piece, expected_piece);
     }
 
     #[test]
@@ -244,7 +244,7 @@ mod tests {
     }
 
     #[test]
-    fn should_allow_to_move_figure_one_cell_down() {
+    fn should_allow_to_move_piece_one_cell_down() {
         let initial_state = r"3 5
         ppp
         .p.
@@ -284,7 +284,7 @@ mod tests {
     }
 
     #[test]
-    fn should_move_figure_down() {
+    fn should_move_piece_down() {
         let initial_state = r"3 5
         ppp
         .p.
@@ -301,7 +301,7 @@ ppp
 
         let mut field = parse_into_field(initial_state).unwrap();
 
-        field.move_figure();
+        field.move_piece();
 
         assert_eq!(field.to_string(), expected)
     }

@@ -41,7 +41,7 @@ pub fn main_handler(
     // play game
 
     while field.can_move() {
-        field.move_figure();
+        field.move_piece();
     }
     // write in file
     let final_state = field.to_string();
