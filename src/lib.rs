@@ -6,7 +6,7 @@ pub mod field;
 pub mod file_system;
 pub mod output;
 
-pub fn main_handler(
+pub fn main_impl(
     args: Vec<String>,
     file_system: &mut dyn FileSystemOperations,
     output: &mut dyn Output,

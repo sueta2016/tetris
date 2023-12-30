@@ -1,4 +1,4 @@
-use tetris::{file_system::FileSystemOperations, main_handler};
+use tetris::{file_system::FileSystemOperations, main_impl};
 
 struct MockFileSystem {
     is_exist: bool,
@@ -57,7 +57,7 @@ mod tests {
     fn should_out_usage_info_if_filepath_absent() {
         let args: Vec<String> = vec![];
 
-        main_handler(
+        main_impl(
             args,
             &mut MockFileSystem::default(),
             &mut MockOutput {
@@ -79,7 +79,7 @@ mod tests {
             expected_output: "File not exists",
         };
 
-        main_handler(args, &mut mock_file_system, &mut mock_output)
+        main_impl(args, &mut mock_file_system, &mut mock_output)
     }
 
     #[test]
@@ -99,7 +99,7 @@ mod tests {
             expected_output: "Couldn't read file",
         };
 
-        main_handler(args, &mut mock_file_system, &mut mock_output)
+        main_impl(args, &mut mock_file_system, &mut mock_output)
     }
 
     #[test]
@@ -126,7 +126,7 @@ pp.
             ..Default::default()
         };
 
-        main_handler(
+        main_impl(
             args,
             &mut mock_file_system,
             &mut MockOutput {
@@ -165,6 +165,6 @@ pp.
             expected_output: "Couldn't save file",
         };
 
-        main_handler(args, &mut mock_file_system, &mut mock_output)
+        main_impl(args, &mut mock_file_system, &mut mock_output)
     }
 }
