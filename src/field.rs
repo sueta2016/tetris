@@ -1,3 +1,5 @@
+use core::fmt;
+
 #[derive(Debug, PartialEq)]
 struct Pixel {
     x: usize,
@@ -37,18 +39,6 @@ impl Field {
         '.'
     }
 
-    pub fn to_string(&self) -> String {
-        let mut result = String::new();
-
-        for y in 0..self.height {
-            for x in 0..self.width {
-                result += &self.get(x, y).to_string()
-            }
-            result += "\n"
-        }
-        result
-    }
-
     pub fn can_move(&self) -> bool {
         let mut can_move = true;
 
@@ -73,6 +63,20 @@ impl Field {
         for piece_pixel in self.piece.iter_mut() {
             piece_pixel.y += 1
         }
+    }
+}
+
+impl fmt::Display for Field {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut result = String::new();
+
+        for y in 0..self.height {
+            for x in 0..self.width {
+                result.push(self.get(x, y));
+            }
+            result.push('\n');
+        }
+        write!(f, "{}", result)
     }
 }
 
