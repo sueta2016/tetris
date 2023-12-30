@@ -19,11 +19,3 @@ impl Output for MockOutput {
         assert_eq!(self.expected_output, string);
     }
 }
-
-impl Default for MockOutput {
-    fn default() -> Self {
-        MockOutput {
-            expected_output: "",
-        }
-    }
-}
