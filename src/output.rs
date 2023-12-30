@@ -2,9 +2,9 @@ pub trait Output {
     fn write(&self, message: &str);
 }
 
-pub struct ConsoleOutput;
+pub struct StdoutOutput;
 
-impl Output for ConsoleOutput {
+impl Output for StdoutOutput {
     fn write(&self, message: &str) {
         println!("{}", message);
     }
