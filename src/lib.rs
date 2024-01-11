@@ -18,11 +18,6 @@ pub fn main_impl(
     let file_path = &args[0];
     // read file
 
-    if !file_system.exists(&file_path) {
-        output.write("File not exists");
-        return;
-    }
-
     let input = match file_system.read_file(file_path) {
         Ok(value) => value,
         Err(_) => {

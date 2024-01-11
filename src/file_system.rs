@@ -7,7 +7,6 @@ use std::{
 pub trait FileSystemOperations {
     fn read_file(&self, file_path: &str) -> Result<String, std::io::Error>;
     fn write_file(&mut self, file_path: &str, content: &str) -> Result<(), std::io::Error>;
-    fn exists(&self, file_path: &str) -> bool;
 }
 
 pub struct FileSystem;
@@ -18,10 +17,6 @@ impl FileSystemOperations for FileSystem {
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
         Ok(contents)
-    }
-
-    fn exists(&self, file_path: &str) -> bool {
-        std::fs::metadata(file_path).is_ok()
     }
 
     fn write_file(&mut self, file_path: &str, content: &str) -> Result<(), std::io::Error> {
@@ -41,10 +36,6 @@ pub struct FakeFileSystem {
 }
 
 impl FileSystemOperations for FakeFileSystem {
-    fn exists(&self, file_path: &str) -> bool {
-        self.file_contents.contains_key(file_path)
-    }
-
     fn read_file(&self, file_path: &str) -> Result<String, std::io::Error> {
         match self.file_contents.get(file_path) {
             Some(content) => Ok(content.to_string()),
