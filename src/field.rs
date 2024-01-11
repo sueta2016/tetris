@@ -1,4 +1,5 @@
 use core::fmt;
+use std::collections::HashMap;
 
 #[derive(Debug, PartialEq)]
 struct Pixel {
@@ -9,7 +10,7 @@ struct Pixel {
 pub struct Field {
     width: usize,
     height: usize,
-    landscape: Vec<Pixel>,
+    landscape: HashMap<usize, bool>,
     piece: Vec<Pixel>,
 }
 
@@ -18,7 +19,7 @@ impl Field {
         Field {
             width,
             height,
-            landscape: vec![],
+            landscape: HashMap::new(),
             piece: vec![],
         }
     }
@@ -30,13 +31,10 @@ impl Field {
             }
         }
 
-        for pixel in self.landscape.iter() {
-            if pixel.x == x && pixel.y == y {
-                return '#';
-            }
+        match self.landscape.get(&(y * self.width + x)) {
+            Some(_) => return '#',
+            None => return '.',
         }
-
-        '.'
     }
 
     pub fn can_move(&self) -> bool {
@@ -47,11 +45,10 @@ impl Field {
                 return false;
             }
 
-            for landscape_pixel in self.landscape.iter() {
-                if piece_pixel.x == landscape_pixel.x && new_y == landscape_pixel.y {
-                    return false;
-                }
-            }
+            match self.landscape.get(&(new_y * self.width + piece_pixel.x)) {
+                Some(_) => return false,
+                None => {}
+            };
         }
 
         true
@@ -111,7 +108,9 @@ impl TryFrom<&str> for Field {
 
                 match character {
                     b'p' => field.piece.push(pixel),
-                    b'#' => field.landscape.push(pixel),
+                    b'#' => {
+                        field.landscape.insert(y * width + x, true);
+                    }
                     b'.' => {}
                     _ => {
                         return Err("Unexpected char in field");
@@ -135,11 +134,16 @@ mod tests {
         .p.
         ...
         ###";
-        let expected_landscape: Vec<Pixel> = vec![
-            Pixel { x: 0, y: 3 },
-            Pixel { x: 1, y: 3 },
-            Pixel { x: 2, y: 3 },
-        ];
+        let mut expected_landscape = HashMap::new();
+
+        // Pixel { x: 0, y: 3 }
+        // Pixel { x: 1, y: 3 }
+        // Pixel { x: 2, y: 3 }
+
+        expected_landscape.insert(3 * 3 + 0, true);
+        expected_landscape.insert(3 * 3 + 1, true);
+        expected_landscape.insert(3 * 3 + 2, true);
+
         let expected_piece: Vec<Pixel> = vec![Pixel { x: 1, y: 0 }, Pixel { x: 1, y: 1 }];
 
         // Act
