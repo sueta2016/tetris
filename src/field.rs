@@ -1,3 +1,6 @@
+use core::fmt;
+use std::collections::HashMap;
+
 #[derive(Debug, PartialEq)]
 struct Pixel {
     x: usize,
@@ -7,8 +10,17 @@ struct Pixel {
 pub struct Field {
     width: usize,
     height: usize,
-    landscape: Vec<Pixel>,
-    figure: Vec<Pixel>,
+
+    /// landscape: A HashMap where the key is the index of the cell in the field and the value is a boolean indicating whether the cell is occupied.
+    /// The index is calculated as `y * width + x`, where `(x, y)` are the coordinates of the cell in the field.
+    /// The point of origin `(0, 0)` is at the top left corner of the field.
+    /// The x-axis points to the right and the y-axis points downwards.
+    landscape: HashMap<usize, bool>,
+
+    /// piece: A vector of `Pixel` structs representing the current piece in play.
+    /// Each `Pixel` has `x` and `y` properties representing its coordinates in the field.
+    /// The pixels in the vector do not need to be in any specific order.
+    piece: Vec<Pixel>,
 }
 
 impl Field {
@@ -16,105 +28,109 @@ impl Field {
         Field {
             width,
             height,
-            landscape: vec![],
-            figure: vec![],
+            landscape: HashMap::new(),
+            piece: vec![],
         }
     }
 
     fn get(&self, x: usize, y: usize) -> char {
-        for pixel in self.figure.iter() {
+        for pixel in self.piece.iter() {
             if pixel.x == x && pixel.y == y {
                 return 'p';
             }
         }
 
-        for pixel in self.landscape.iter() {
-            if pixel.x == x && pixel.y == y {
-                return '#';
-            }
+        match self.landscape.get(&(y * self.width + x)) {
+            Some(_) => return '#',
+            None => return '.',
         }
-
-        '.'
-    }
-
-    pub fn to_string(&self) -> String {
-        let mut result = String::new();
-
-        for y in 0..self.height {
-            for x in 0..self.width {
-                result += &self.get(x, y).to_string()
-            }
-            result += "\n"
-        }
-        result
     }
 
     pub fn can_move(&self) -> bool {
-        let mut can_move = true;
-
-        for figure_pixel in self.figure.iter() {
-            let new_y = figure_pixel.y + 1;
+        for piece_pixel in self.piece.iter() {
+            let new_y = piece_pixel.y + 1;
 
             if new_y == self.height {
-                can_move = false;
-                break;
+                return false;
             }
 
-            for landscape_pixel in self.landscape.iter() {
-                if figure_pixel.x == landscape_pixel.x && new_y == landscape_pixel.y {
-                    can_move = false
-                }
-            }
+            match self.landscape.get(&(new_y * self.width + piece_pixel.x)) {
+                Some(_) => return false,
+                None => {}
+            };
         }
-        can_move
+
+        true
     }
 
-    pub fn move_figure(&mut self) {
-        for figure_pixel in self.figure.iter_mut() {
-            figure_pixel.y += 1
+    pub fn play(&mut self) {
+        while self.can_move() {
+            for piece_pixel in self.piece.iter_mut() {
+                piece_pixel.y += 1;
+            }
         }
     }
 }
 
-pub fn parse_into_field<'a>(input: &'a str) -> Result<Field, &'a str> {
-    let lines: Vec<&str> = input.split('\n').collect();
+impl fmt::Display for Field {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut result = String::new();
 
-    if lines.len() < 2 {
-        return Err("Invalid input");
+        for y in 0..self.height {
+            for x in 0..self.width {
+                result.push(self.get(x, y));
+            }
+            result.push('\n');
+        }
+        write!(f, "{}", result)
     }
+}
 
-    let dimensions: Vec<&str> = lines[0].split(' ').collect();
-    let width = dimensions[0].parse().unwrap();
-    let height = dimensions[1].parse().unwrap();
+impl TryFrom<&str> for Field {
+    type Error = &'static str;
 
-    let mut field = Field::new(width, height);
+    fn try_from(input: &str) -> Result<Self, Self::Error> {
+        let lines: Vec<&str> = input.split('\n').collect();
 
-    if height + 1 != lines.len() {
-        return Err("Specified height don't match with the actual one");
-    }
-
-    for y in 0..height {
-        let line = lines[y + 1].trim();
-
-        if line.len() != width {
-            return Err("Specified width don't match with the actual one");
+        if lines.len() < 2 {
+            return Err("Invalid input");
         }
 
-        for x in 0..width {
-            let pixel = Pixel { x, y };
-            let character = line.as_bytes()[x];
+        let dimensions: Vec<&str> = lines[0].split(' ').collect();
+        let width = dimensions[0].parse().unwrap();
+        let height = dimensions[1].parse().unwrap();
 
-            match character {
-                b'p' => field.figure.push(pixel),
-                b'#' => field.landscape.push(pixel),
-                b'.' => {}
-                _ => {
-                    return Err("Unexpected char in field");
+        let mut field = Field::new(width, height);
+
+        if height + 1 != lines.len() {
+            return Err("Specified height don't match with the actual one");
+        }
+
+        for y in 0..height {
+            let line = lines[y + 1].trim();
+
+            if line.len() != width {
+                return Err("Specified width don't match with the actual one");
+            }
+
+            for x in 0..width {
+                let pixel = Pixel { x, y };
+                let character = line.as_bytes()[x];
+
+                match character {
+                    b'p' => field.piece.push(pixel),
+                    b'#' => {
+                        field.landscape.insert(y * width + x, true);
+                    }
+                    b'.' => {}
+                    _ => {
+                        return Err("Unexpected char in field");
+                    }
                 }
             }
         }
+        Ok(field)
     }
-    Ok(field)
 }
 
 #[cfg(test)]
@@ -129,23 +145,26 @@ mod tests {
         .p.
         ...
         ###";
-        let expected_width = 3;
-        let expected_height = 4;
-        let expected_landscape: Vec<Pixel> = vec![
-            Pixel { x: 0, y: 3 },
-            Pixel { x: 1, y: 3 },
-            Pixel { x: 2, y: 3 },
-        ];
-        let expected_figure: Vec<Pixel> = vec![Pixel { x: 1, y: 0 }, Pixel { x: 1, y: 1 }];
+        let mut expected_landscape = HashMap::new();
+
+        // Pixel { x: 0, y: 3 }
+        // Pixel { x: 1, y: 3 }
+        // Pixel { x: 2, y: 3 }
+
+        expected_landscape.insert(3 * 3 + 0, true);
+        expected_landscape.insert(3 * 3 + 1, true);
+        expected_landscape.insert(3 * 3 + 2, true);
+
+        let expected_piece: Vec<Pixel> = vec![Pixel { x: 1, y: 0 }, Pixel { x: 1, y: 1 }];
 
         // Act
-        let field = parse_into_field(input).unwrap();
+        let field = Field::try_from(input).unwrap();
 
         // Assert
-        assert_eq!(field.width, expected_width);
-        assert_eq!(field.height, expected_height);
+        assert_eq!(field.width, 3);
+        assert_eq!(field.height, 4);
         assert_eq!(field.landscape, expected_landscape);
-        assert_eq!(field.figure, expected_figure);
+        assert_eq!(field.piece, expected_piece);
     }
 
     #[test]
@@ -158,7 +177,7 @@ mod tests {
         #I#";
 
         // Act
-        let error_text = parse_into_field(input).unwrap_err();
+        let error_text = Field::try_from(input).unwrap_err();
 
         assert_eq!(error_text, "Unexpected char in field")
     }
@@ -173,7 +192,7 @@ mod tests {
         ###";
 
         // Act
-        let error_text = parse_into_field(input).unwrap_err();
+        let error_text = Field::try_from(input).unwrap_err();
 
         assert_eq!(
             error_text,
@@ -191,7 +210,7 @@ mod tests {
         ###";
 
         // Act
-        let error_text = parse_into_field(input).unwrap_err();
+        let error_text = Field::try_from(input).unwrap_err();
 
         assert_eq!(
             error_text,
@@ -210,7 +229,7 @@ mod tests {
         ###";
 
         // Act
-        let _ = parse_into_field(input).unwrap();
+        let _ = Field::try_from(input).unwrap();
     }
 
     #[test]
@@ -220,18 +239,18 @@ mod tests {
         let input = r"Ronaldo better than Messi";
 
         // Act
-        let _ = parse_into_field(input).unwrap();
+        let _ = Field::try_from(input).unwrap();
     }
 
     #[test]
-    fn should_correctly_cast_to_string() {
+    fn should_correctly_convert_to_string() {
         let input = r"3 5
         ppp
         .p.
         ...
         #.#
         ###";
-        let field = parse_into_field(input).unwrap();
+        let field = Field::try_from(input).unwrap();
 
         let expected_string = r"ppp
 .p.
@@ -244,7 +263,7 @@ mod tests {
     }
 
     #[test]
-    fn should_allow_to_move_figure_one_cell_down() {
+    fn should_allow_to_move_piece_one_cell_down() {
         let initial_state = r"3 5
         ppp
         .p.
@@ -252,7 +271,7 @@ mod tests {
         #.#
         ###";
 
-        let field = parse_into_field(initial_state).unwrap();
+        let field = Field::try_from(initial_state).unwrap();
 
         assert_eq!(field.can_move(), true)
     }
@@ -265,7 +284,7 @@ mod tests {
         ...
         #p#
         ###";
-        let field = parse_into_field(initial_state).unwrap();
+        let field = Field::try_from(initial_state).unwrap();
 
         assert_eq!(field.can_move(), false)
     }
@@ -278,31 +297,8 @@ mod tests {
         ...
         ...
         .pp";
-        let field = parse_into_field(initial_state).unwrap();
+        let field = Field::try_from(initial_state).unwrap();
 
         assert_eq!(field.can_move(), false)
-    }
-
-    #[test]
-    fn should_move_figure_down() {
-        let initial_state = r"3 5
-        ppp
-        .p.
-        ...
-        #.#
-        ###";
-
-        let expected = r"...
-ppp
-.p.
-#.#
-###
-";
-
-        let mut field = parse_into_field(initial_state).unwrap();
-
-        field.move_figure();
-
-        assert_eq!(field.to_string(), expected)
     }
 }
