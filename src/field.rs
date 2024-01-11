@@ -10,7 +10,16 @@ struct Pixel {
 pub struct Field {
     width: usize,
     height: usize,
+
+    /// landscape: A HashMap where the key is the index of the cell in the field and the value is a boolean indicating whether the cell is occupied.
+    /// The index is calculated as `y * width + x`, where `(x, y)` are the coordinates of the cell in the field.
+    /// The point of origin `(0, 0)` is at the top left corner of the field.
+    /// The x-axis points to the right and the y-axis points downwards.
     landscape: HashMap<usize, bool>,
+
+    /// piece: A vector of `Pixel` structs representing the current piece in play.
+    /// Each `Pixel` has `x` and `y` properties representing its coordinates in the field.
+    /// The pixels in the vector do not need to be in any specific order.
     piece: Vec<Pixel>,
 }
 
