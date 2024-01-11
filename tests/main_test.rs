@@ -49,7 +49,7 @@ impl Default for MockFileSystem {
 
 #[cfg(test)]
 mod tests {
-    use tetris::output::MockOutput;
+    use tetris::output::FakeOutput;
 
     use super::*;
 
@@ -57,12 +57,13 @@ mod tests {
     fn should_out_usage_info_if_filepath_absent() {
         let args: Vec<String> = vec![];
 
-        main_impl(
-            args,
-            &mut MockFileSystem::default(),
-            &mut MockOutput {
-                expected_output: "Usage: ./main <filename>",
-            },
+        let mut fake_output = FakeOutput::default();
+
+        main_impl(args, &mut MockFileSystem::default(), &mut fake_output);
+
+        assert_eq!(
+            fake_output.messages[0],
+            String::from("Usage: ./main <filename>")
         );
     }
 
@@ -75,11 +76,11 @@ mod tests {
             ..Default::default()
         };
 
-        let mut mock_output = MockOutput {
-            expected_output: "File not exists",
-        };
+        let mut fake_output = FakeOutput::default();
 
-        main_impl(args, &mut mock_file_system, &mut mock_output)
+        main_impl(args, &mut mock_file_system, &mut fake_output);
+
+        assert_eq!(fake_output.messages[0], String::from("File not exists"));
     }
 
     #[test]
@@ -95,20 +96,20 @@ mod tests {
             ..Default::default()
         };
 
-        let mut mock_output = MockOutput {
-            expected_output: "Couldn't read file",
-        };
+        let mut fake_output = FakeOutput::default();
 
-        main_impl(args, &mut mock_file_system, &mut mock_output)
+        main_impl(args, &mut mock_file_system, &mut fake_output);
+
+        assert_eq!(fake_output.messages[0], String::from("Couldn't read file"));
     }
 
     #[test]
     fn should_correctly_play_game() {
         let input = r"3 4
-        .p.
-        pp.
-        ...
-        ###"
+            .p.
+            pp.
+            ...
+            ###"
         .to_string();
 
         let output_str = "...
@@ -126,13 +127,11 @@ pp.
             ..Default::default()
         };
 
-        main_impl(
-            args,
-            &mut mock_file_system,
-            &mut MockOutput {
-                expected_output: "File created",
-            },
-        );
+        let mut fake_output = FakeOutput::default();
+
+        main_impl(args, &mut mock_file_system, &mut fake_output);
+
+        assert_eq!(fake_output.messages[0], "File created");
     }
 
     #[test]
@@ -143,10 +142,10 @@ pp.
 ###
 ";
         let input = r"3 4
-        .p.
-        pp.
-        ...
-        ###"
+.p.
+pp.
+...
+###"
         .to_string();
 
         let args = vec!["messi.txt".to_string()];
@@ -161,10 +160,10 @@ pp.
             ..Default::default()
         };
 
-        let mut mock_output = MockOutput {
-            expected_output: "Couldn't save file",
-        };
+        let mut fake_output = FakeOutput::default();
 
-        main_impl(args, &mut mock_file_system, &mut mock_output)
+        main_impl(args, &mut mock_file_system, &mut fake_output);
+
+        assert_eq!(fake_output.messages[0], "Couldn't save file");
     }
 }
