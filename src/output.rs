@@ -1,21 +1,29 @@
 pub trait Output {
-    fn write(&self, message: &str);
+    fn write(&mut self, message: &str);
 }
 
 pub struct StdoutOutput;
 
 impl Output for StdoutOutput {
-    fn write(&self, message: &str) {
+    fn write(&mut self, message: &str) {
         println!("{}", message);
     }
 }
 
-pub struct MockOutput {
-    pub expected_output: &'static str,
+pub struct FakeOutput {
+    pub messages: Vec<String>,
 }
 
-impl Output for MockOutput {
-    fn write(&self, string: &str) {
-        assert_eq!(self.expected_output, string);
+impl Default for FakeOutput {
+    fn default() -> Self {
+        FakeOutput {
+            messages: Vec::new(),
+        }
+    }
+}
+
+impl Output for FakeOutput {
+    fn write(&mut self, message: &str) {
+        self.messages.push(message.to_string())
     }
 }
