@@ -38,7 +38,7 @@ pub fn main_impl(
     while field.can_move() {
         field.move_piece();
     }
-    // write in file
+    // write to a file
     let final_state = field.to_string();
 
     match file_system.write_file("out.txt", final_state.as_str()) {
