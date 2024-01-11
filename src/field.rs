@@ -80,45 +80,49 @@ impl fmt::Display for Field {
     }
 }
 
-pub fn parse_into_field<'a>(input: &'a str) -> Result<Field, &'a str> {
-    let lines: Vec<&str> = input.split('\n').collect();
+impl TryFrom<&str> for Field {
+    type Error = &'static str;
 
-    if lines.len() < 2 {
-        return Err("Invalid input");
-    }
+    fn try_from(input: &str) -> Result<Self, Self::Error> {
+        let lines: Vec<&str> = input.split('\n').collect();
 
-    let dimensions: Vec<&str> = lines[0].split(' ').collect();
-    let width = dimensions[0].parse().unwrap();
-    let height = dimensions[1].parse().unwrap();
-
-    let mut field = Field::new(width, height);
-
-    if height + 1 != lines.len() {
-        return Err("Specified height don't match with the actual one");
-    }
-
-    for y in 0..height {
-        let line = lines[y + 1].trim();
-
-        if line.len() != width {
-            return Err("Specified width don't match with the actual one");
+        if lines.len() < 2 {
+            return Err("Invalid input");
         }
 
-        for x in 0..width {
-            let pixel = Pixel { x, y };
-            let character = line.as_bytes()[x];
+        let dimensions: Vec<&str> = lines[0].split(' ').collect();
+        let width = dimensions[0].parse().unwrap();
+        let height = dimensions[1].parse().unwrap();
 
-            match character {
-                b'p' => field.piece.push(pixel),
-                b'#' => field.landscape.push(pixel),
-                b'.' => {}
-                _ => {
-                    return Err("Unexpected char in field");
+        let mut field = Field::new(width, height);
+
+        if height + 1 != lines.len() {
+            return Err("Specified height don't match with the actual one");
+        }
+
+        for y in 0..height {
+            let line = lines[y + 1].trim();
+
+            if line.len() != width {
+                return Err("Specified width don't match with the actual one");
+            }
+
+            for x in 0..width {
+                let pixel = Pixel { x, y };
+                let character = line.as_bytes()[x];
+
+                match character {
+                    b'p' => field.piece.push(pixel),
+                    b'#' => field.landscape.push(pixel),
+                    b'.' => {}
+                    _ => {
+                        return Err("Unexpected char in field");
+                    }
                 }
             }
         }
+        Ok(field)
     }
-    Ok(field)
 }
 
 #[cfg(test)]
@@ -141,7 +145,7 @@ mod tests {
         let expected_piece: Vec<Pixel> = vec![Pixel { x: 1, y: 0 }, Pixel { x: 1, y: 1 }];
 
         // Act
-        let field = parse_into_field(input).unwrap();
+        let field = Field::try_from(input).unwrap();
 
         // Assert
         assert_eq!(field.width, 3);
@@ -160,7 +164,7 @@ mod tests {
         #I#";
 
         // Act
-        let error_text = parse_into_field(input).unwrap_err();
+        let error_text = Field::try_from(input).unwrap_err();
 
         assert_eq!(error_text, "Unexpected char in field")
     }
@@ -175,7 +179,7 @@ mod tests {
         ###";
 
         // Act
-        let error_text = parse_into_field(input).unwrap_err();
+        let error_text = Field::try_from(input).unwrap_err();
 
         assert_eq!(
             error_text,
@@ -193,7 +197,7 @@ mod tests {
         ###";
 
         // Act
-        let error_text = parse_into_field(input).unwrap_err();
+        let error_text = Field::try_from(input).unwrap_err();
 
         assert_eq!(
             error_text,
@@ -212,7 +216,7 @@ mod tests {
         ###";
 
         // Act
-        let _ = parse_into_field(input).unwrap();
+        let _ = Field::try_from(input).unwrap();
     }
 
     #[test]
@@ -222,7 +226,7 @@ mod tests {
         let input = r"Ronaldo better than Messi";
 
         // Act
-        let _ = parse_into_field(input).unwrap();
+        let _ = Field::try_from(input).unwrap();
     }
 
     #[test]
@@ -233,7 +237,7 @@ mod tests {
         ...
         #.#
         ###";
-        let field = parse_into_field(input).unwrap();
+        let field = Field::try_from(input).unwrap();
 
         let expected_string = r"ppp
 .p.
@@ -254,7 +258,7 @@ mod tests {
         #.#
         ###";
 
-        let field = parse_into_field(initial_state).unwrap();
+        let field = Field::try_from(initial_state).unwrap();
 
         assert_eq!(field.can_move(), true)
     }
@@ -267,7 +271,7 @@ mod tests {
         ...
         #p#
         ###";
-        let field = parse_into_field(initial_state).unwrap();
+        let field = Field::try_from(initial_state).unwrap();
 
         assert_eq!(field.can_move(), false)
     }
@@ -280,7 +284,7 @@ mod tests {
         ...
         ...
         .pp";
-        let field = parse_into_field(initial_state).unwrap();
+        let field = Field::try_from(initial_state).unwrap();
 
         assert_eq!(field.can_move(), false)
     }
@@ -301,7 +305,7 @@ ppp
 ###
 ";
 
-        let mut field = parse_into_field(initial_state).unwrap();
+        let mut field = Field::try_from(initial_state).unwrap();
 
         field.move_piece();
 

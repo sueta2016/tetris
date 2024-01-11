@@ -1,4 +1,4 @@
-use field::parse_into_field;
+use field::Field;
 use file_system::FileSystemOperations;
 use output::Output;
 
@@ -26,7 +26,7 @@ pub fn main_impl(
         }
     };
 
-    let mut field = match parse_into_field(input.as_str()) {
+    let mut field = match Field::try_from(input.as_str()) {
         Ok(value) => value,
         Err(err_text) => {
             output.write(err_text);
