@@ -40,23 +40,21 @@ impl Field {
     }
 
     pub fn can_move(&self) -> bool {
-        let mut can_move = true;
-
         for piece_pixel in self.piece.iter() {
             let new_y = piece_pixel.y + 1;
 
             if new_y == self.height {
-                can_move = false;
-                break;
+                return false;
             }
 
             for landscape_pixel in self.landscape.iter() {
                 if piece_pixel.x == landscape_pixel.x && new_y == landscape_pixel.y {
-                    can_move = false
+                    return false;
                 }
             }
         }
-        can_move
+
+        true
     }
 
     pub fn move_piece(&mut self) {
