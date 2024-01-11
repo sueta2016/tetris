@@ -133,8 +133,6 @@ mod tests {
         .p.
         ...
         ###";
-        let expected_width = 3;
-        let expected_height = 4;
         let expected_landscape: Vec<Pixel> = vec![
             Pixel { x: 0, y: 3 },
             Pixel { x: 1, y: 3 },
@@ -146,8 +144,8 @@ mod tests {
         let field = parse_into_field(input).unwrap();
 
         // Assert
-        assert_eq!(field.width, expected_width);
-        assert_eq!(field.height, expected_height);
+        assert_eq!(field.width, 3);
+        assert_eq!(field.height, 4);
         assert_eq!(field.landscape, expected_landscape);
         assert_eq!(field.piece, expected_piece);
     }
