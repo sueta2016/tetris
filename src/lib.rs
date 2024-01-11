@@ -16,8 +16,8 @@ pub fn main_impl(
         return;
     }
     let file_path = &args[0];
-    // read file
 
+    // read file
     let input = match file_system.read_file(file_path) {
         Ok(value) => value,
         Err(e) => {
@@ -33,11 +33,9 @@ pub fn main_impl(
             return;
         }
     };
-    // play game
 
-    while field.can_move() {
-        field.move_piece();
-    }
+    field.play();
+
     // write to a file
     let final_state = field.to_string();
 

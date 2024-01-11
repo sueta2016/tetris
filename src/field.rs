@@ -54,9 +54,11 @@ impl Field {
         true
     }
 
-    pub fn move_piece(&mut self) {
-        for piece_pixel in self.piece.iter_mut() {
-            piece_pixel.y += 1
+    pub fn play(&mut self) {
+        while self.can_move() {
+            for piece_pixel in self.piece.iter_mut() {
+                piece_pixel.y += 1;
+            }
         }
     }
 }
@@ -289,28 +291,5 @@ mod tests {
         let field = Field::try_from(initial_state).unwrap();
 
         assert_eq!(field.can_move(), false)
-    }
-
-    #[test]
-    fn should_move_piece_down() {
-        let initial_state = r"3 5
-        ppp
-        .p.
-        ...
-        #.#
-        ###";
-
-        let expected = r"...
-ppp
-.p.
-#.#
-###
-";
-
-        let mut field = Field::try_from(initial_state).unwrap();
-
-        field.move_piece();
-
-        assert_eq!(field.to_string(), expected)
     }
 }
