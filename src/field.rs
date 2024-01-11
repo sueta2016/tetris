@@ -228,7 +228,7 @@ mod tests {
     }
 
     #[test]
-    fn should_correctly_cast_to_string() {
+    fn should_correctly_convert_to_string() {
         let input = r"3 5
         ppp
         .p.
