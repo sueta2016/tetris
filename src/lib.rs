@@ -41,6 +41,6 @@ pub fn main_impl(
 
     match file_system.write_file("out.txt", final_state.as_str()) {
         Ok(_) => output.write("File created"),
-        Err(_) => output.write("Couldn't save file"),
+        Err(e) => output.write(&format!("Error: {}", e)),
     }
 }
