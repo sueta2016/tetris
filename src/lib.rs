@@ -20,8 +20,8 @@ pub fn main_impl(
 
     let input = match file_system.read_file(file_path) {
         Ok(value) => value,
-        Err(_) => {
-            output.write("Couldn't read file");
+        Err(e) => {
+            output.write(&format!("Error: {}", e));
             return;
         }
     };

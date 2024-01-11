@@ -34,7 +34,10 @@ mod tests {
 
         main_impl(args, &mut fake_file_system, &mut fake_output);
 
-        assert_eq!(fake_output.messages[0], String::from("File not exists"));
+        assert_eq!(
+            fake_output.messages[0],
+            String::from("Error: File not found")
+        );
     }
 
     #[test]
